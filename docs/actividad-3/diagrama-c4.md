@@ -3,46 +3,45 @@
 ## Nivel 1 — Contexto
 
 ```mermaid
-C4Context
-    Person(cliente, "Cliente", "Realiza pedidos y espera su entrega")
-    Person(operador, "Operador logístico", "Gestiona la operación de entregas")
-    Person(repartidor, "Repartidor", "Realiza la entrega física")
+flowchart LR
+    Cliente(["Cliente<br/>Realiza pedidos y espera su entrega"])
+    Operador(["Operador logístico<br/>Gestiona la operación de entregas"])
+    Repartidor(["Repartidor<br/>Realiza la entrega física"])
+    Rutify["Rutify<br/>Plataforma de logística de última milla"]
 
-    System(rutify, "Rutify", "Plataforma de logística de última milla")
-
-    Rel(cliente, rutify, "Crea pedidos, consulta estado")
-    Rel(operador, rutify, "Gestiona asignaciones")
-    Rel(rutify, repartidor, "Asigna entregas")
+    Cliente -->|Crea pedidos| Rutify
+    Operador -->|Gestiona asignaciones| Rutify
+    Rutify -->|Asigna entregas| Repartidor
 ```
 
 ## Nivel 2 — Contenedores (dentro de Rutify)
 
 ```mermaid
-C4Container
-    Container(entregas, "Contexto de Entregas", "Monolito modular", "Gestiona el ciclo de vida de la entrega y la asignación de repartidor")
-    Container(ruteo, "Contexto de Ruteo", "Monolito modular", "Gestiona repartidores, rutas y capacidad")
-    Container(pedidos, "Contexto de Pedidos", "Monolito modular", "Gestiona pedidos y clientes")
-    Container(notificaciones, "Contexto de Notificaciones", "Monolito modular", "Envía notificaciones al cliente")
+flowchart LR
+    Pedidos["Contexto de Pedidos<br/>Gestiona pedidos y clientes"]
+    Entregas["Contexto de Entregas<br/>Gestiona el ciclo de vida de la entrega"]
+    Ruteo["Contexto de Ruteo<br/>Gestiona repartidores y capacidad"]
+    Notificaciones["Contexto de Notificaciones<br/>Envía notificaciones al cliente"]
 
-    Rel(pedidos, entregas, "Crea entrega a partir de pedido confirmado")
-    Rel(entregas, ruteo, "Consulta disponibilidad de repartidor (puerto)")
-    Rel(entregas, notificaciones, "Publica resultado de asignación")
+    Pedidos -->|Crea entrega| Entregas
+    Entregas -->|Consulta disponibilidad| Ruteo
+    Entregas -->|Publica resultado| Notificaciones
 ```
 
 ## Nivel 3 — Componentes (dentro del Contexto de Entregas)
 
 ```mermaid
-C4Component
-    Component(usecase, "AsignarRepartidorUseCase", "Aplicación", "Coordina la asignación")
-    Component(entidad, "Entrega", "Dominio", "Protege la invariante de repartidor único")
-    Component(repo, "IEntregaRepository", "Puerto", "Persistencia de entregas")
-    Component(disp, "IDisponibilidadRepartidor", "Puerto", "Consulta capacidad del repartidor")
-    Component(adapterDb, "Adaptador EF Core", "Infraestructura", "Implementa IEntregaRepository")
-    Component(adapterRuteo, "Adaptador HTTP Ruteo", "Infraestructura", "Implementa IDisponibilidadRepartidor")
+flowchart TD
+    UseCase["AsignarRepartidorUseCase<br/>Aplicación"]
+    Entidad["Entrega<br/>Dominio"]
+    Repo["IEntregaRepository<br/>Puerto"]
+    Disp["IDisponibilidadRepartidor<br/>Puerto"]
+    AdapterDb["Adaptador EF Core<br/>Infraestructura"]
+    AdapterRuteo["Adaptador HTTP Ruteo<br/>Infraestructura"]
 
-    Rel(usecase, entidad, "Usa")
-    Rel(usecase, repo, "Usa")
-    Rel(usecase, disp, "Usa")
-    Rel(adapterDb, repo, "Implementa")
-    Rel(adapterRuteo, disp, "Implementa")
+    UseCase --> Entidad
+    UseCase --> Repo
+    UseCase --> Disp
+    AdapterDb -->|Implementa| Repo
+    AdapterRuteo -->|Implementa| Disp
 ```
